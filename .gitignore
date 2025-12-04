@@ -1,1 +1,6 @@
 venv/
+Tip: You can also ignore other common files/folders in Python projects:
+
+__pycache__/
+*.pyc
+.env
