@@ -17,6 +17,108 @@ GET /api/v1/products/categories/
 - `parent` (optioneel): Filter op parent categorie slug
 - `root_only` (optioneel): Toon alleen root categorieën
 
+
+
+## Data Modellen
+
+### ProductCategory
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| id | Integer | Unieke identifier |
+| name | String | Categorie naam |
+| slug | String | URL-vriendelijke naam |
+| description | Text | Beschrijving |
+| image | Image | Categorie afbeelding |
+| parent | ForeignKey | Parent categorie |
+| is_active | Boolean | Is categorie actief? |
+| display_order | Integer | Weergave volgorde |
+| meta_title | String | SEO titel |
+| meta_description | Text | SEO beschrijving |
+| meta_keywords | Text | SEO keywords |
+| created_at | DateTime | Aanmaakdatum |
+| updated_at | DateTime | Update datum |
+
+### Product
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| id | Integer | Unieke identifier |
+| title | String | Product titel |
+| slug | String | URL-vriendelijke naam |
+| short_description | Text | Korte beschrijving |
+| full_description | Text | Volledige beschrijving |
+| categories | ManyToMany | Categorieën |
+| price | Decimal | Prijs (EUR) |
+| original_price | Decimal | Originele prijs |
+| is_on_sale | Boolean | In aanbieding? |
+| sale_price | Decimal | Aanbiedingsprijs |
+| sku | String | Stock Keeping Unit |
+| stock_quantity | Integer | Voorraad hoeveelheid |
+| low_stock_threshold | Integer | Lage voorraad drempel |
+| condition | String | Conditie (new, like_new, good, fair, refurbished) |
+| status | String | Status (available, sold, reserved, pending) |
+| brand | String | Merk |
+| model | String | Model |
+| dimensions | String | Afmetingen |
+| weight | Decimal | Gewicht (kg) |
+| material | String | Materiaal |
+| color | String | Kleur |
+| is_featured | Boolean | Uitgelicht? |
+| is_bestseller | Boolean | Bestseller? |
+| views_count | Integer | Aantal weergaven |
+| requires_assembly | Boolean | Montage nodig? |
+| assembly_service_available | Boolean | Montageservice beschikbaar? |
+| delivery_available | Boolean | Bezorging beschikbaar? |
+| meta_title | String | SEO titel |
+| meta_description | Text | SEO beschrijving |
+| meta_keywords | Text | SEO keywords |
+| created_by | ForeignKey | Aangemaakt door |
+| created_at | DateTime | Aanmaakdatum |
+| updated_at | DateTime | Update datum |
+| published_at | DateTime | Publicatiedatum |
+
+### ProductImage
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| id | Integer | Unieke identifier |
+| product | ForeignKey | Gerelateerd product |
+| image | Image | Afbeelding |
+| alt_text | String | Alt tekst |
+| caption | String | Bijschrift |
+| display_order | Integer | Weergave volgorde |
+| is_primary | Boolean | Hoofdafbeelding? |
+| created_at | DateTime | Aanmaakdatum |
+| updated_at | DateTime | Update datum |
+
+### ProductFeature
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| id | Integer | Unieke identifier |
+| product | ForeignKey | Gerelateerd product |
+| name | String | Kenmerk naam |
+| value | String | Kenmerk waarde |
+| icon | String | Icoon class |
+| display_order | Integer | Weergave volgorde |
+
+### ProductReview
+| Veld | Type | Beschrijving |
+|------|------|-------------|
+| id | Integer | Unieke identifier |
+| product | ForeignKey | Gerelateerd product |
+| user | ForeignKey | Gebruiker |
+| rating | Integer | Beoordeling (1-5) |
+| title | String | Titel |
+| comment | Text | Opmerking |
+| reviewer_name | String | Naam beoordelaar |
+| reviewer_email | Email | Email beoordelaar |
+| is_approved | Boolean | Goedgekeurd? |
+| is_verified_purchase | Boolean | Geverifieerde aankoop? |
+| helpful_yes | Integer | Handig - ja teller |
+| helpful_no | Integer | Handig - nee teller |
+| created_at | DateTime | Aanmaakdatum |
+| updated_at | DateTime | Update datum |
+
+
+
 **Response:**
 ```json
 {
