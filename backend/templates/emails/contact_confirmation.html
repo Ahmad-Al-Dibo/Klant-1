@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bevestiging contactverzoek</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px 5px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 0 0 5px 5px;
+        }
+        .info-box {
+            background-color: white;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        .footer {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+        .reference {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Bedankt voor je bericht</h1>
+    </div>
+    
+    <div class="content">
+        <p>Beste {{ message.full_name }},</p>
+        
+        <p>We hebben je bericht ontvangen en gaan er zo snel mogelijk mee aan de slag.</p>
+        
+        <div class="info-box">
+            <h3>Je berichtgegevens:</h3>
+            <p><strong>Referentienummer:</strong> <span class="reference">{{ message.reference_number }}</span></p>
+            <p><strong>Onderwerp:</strong> {{ message.subject }}</p>
+            <p><strong>Categorie:</strong> {{ message.category.name }}</p>
+            <p><strong>Verzonden op:</strong> {{ message.created_at|date:"d-m-Y H:i" }}</p>
+        </div>
+        
+        <p>We streven ernaar om binnen 24 uur te reageren op je bericht.</p>
+        
+        <p>Je kunt de status van je bericht volgen met je referentienummer.</p>
+        
+        <p>Met vriendelijke groet,<br>
+        Het team van {{ site_name }}</p>
+    </div>
+    
+    <div class="footer">
+        <p>Dit is een automatisch gegenereerd bericht. Gelieve niet te antwoorden op deze e-mail.</p>
+        <p>© {{ current_year }} {{ site_name }}. Alle rechten voorbehouden.</p>
+    </div>
+</body>
+</html>

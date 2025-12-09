@@ -1346,76 +1346,59 @@ class ServiceSerializer(serializers.ModelSerializer):
    ```bash
    # Test MongoDB connection
    mongo --host localhost --port 27017
-   
-   # Check Django database config
-   python manage.py check --database default
    ```
 
-## **Changelog**
+2. **Permission denied errors**
+   - Controleer JWT token
+   - Verifieer user permissions
+   - Check CORS settings
 
-### **Versie 1.0.0 (4 December 2025)**
-- **Initial release** van Diensten API
-- **8 vaste categorieën** volgens specificaties
-- **Complete CRUD operations** voor alle modellen
-- **Voor/Na portfolio systeem** voor renovatie diensten
-- **Testimonial systeem** met moderation workflow
-- **Service pakketten** met prijsopties
-- **Geografische beschikbaarheid** (ServiceArea)
-- **Analytics tracking** (views, quote requests)
-- **Geavanceerde zoekfunctionaliteit**
-- **Admin statistieken** dashboard
+3. **Image upload fouten**
+   - Controleer MEDIA_ROOT permissions
+   - Verifieer file size limits
+   - Check image format
 
-### **Versie 1.1.0 (Gepland)**
-- **Real-time notifications** bij nieuwe testimonials
-- **Export functionaliteit** voor service data
-- **Bulk operations** voor service management
-- **Advanced caching** met Redis
-- **WebSocket support** voor live updates
+## Veiligheid
 
-## **Contact & Support**
+### Security Headers
+```
+X-Content-Type-Options: nosniff
+X-Frame-Options: DENY
+X-XSS-Protection: 1; mode=block
+Content-Security-Policy: default-src 'self'
+```
 
-### **Documentatie**
-- **API Documentation**: `/api/v1/services/`
-- **Admin Interface**: `/admin/services/`
-- **GitHub Repository**: [link naar repo]
-- **Swagger/OpenAPI**: `/swagger/` (optioneel)
+### Input Validatie
+- SQL injection protection via Django ORM
+- XSS protection via template escaping
+- File upload validation
+- Rate limiting
 
-### **Support Channels**
-- **Email**: support@bedrijfsnaam.nl
-- **Issue Tracker**: GitHub Issues
-- **Documentatie Updates**: Regelmatige updates
+### Data Bescherming
+- HTTPS verplicht in production
+- JWT token expiration
+- Password hashing (bcrypt)
+- Sensitive data encryption
 
-### **Contributing**
-1. Fork de repository
-2. Maak een feature branch
-3. Commit changes met duidelijke messages
-4. Push naar de branch
-5. Open een Pull Request
+## Changelog
 
----
+### Versie 1.0.0 (4 December 2025)
+- Initial release
+- Complete CRUD voor producten
+- Categorie management
+- Review systeem
+- Geavanceerde zoekfunctionaliteit
+- Admin statistieken
+- Multi-language support (NL, DE, AR)
 
-## **Bijlage: Vergelijking Producten vs Diensten API**
+## Contact & Support
 
-| Aspect | Producten API | Diensten API |
-|--------|--------------|--------------|
-| **Primair doel** | Verkoop van fysieke producten | Aanbieden van services |
-| **Prijs model** | Vaste prijzen, kortingen | Vaste prijzen of offerte |
-| **Voorraad** | Stock management | Geen voorraad (capacity based) |
-| **Images** | Product foto's | Voor/Na portfolio |
-| **Reviews** | Product beoordelingen | Dienst testimonials |
-| **Packages** | N.v.t. | Service pakketten |
-| **Availability** | Altijd beschikbaar | Per gebied (ServiceArea) |
-| **Booking** | Directe aankoop | Online booking mogelijk |
-| **SEO focus** | Product pagina's | Dienst landingspagina's |
-| **Business logic** | Inventory, ordering | Appointment, quoting |
+Voor vragen of ondersteuning:
+- API Documentatie: `/docs/`
+- Admin Interface: `/admin/`
+- GitHub Repository: [link]
+- Email: support@bedrijfsnaam.nl
 
 ---
 
-**Laatst bijgewerkt**: 4 December 2025  
-**API Versie**: v1.0.0  
-**Django Versie**: 4.2+  
-**Database**: MongoDB via Djongo  
-**Authenticatie**: JWT tokens  
-**Documentatie Status**: Compleet
-
-Deze API is ontworpen voor schaalbaarheid, prestaties en eenvoudige integratie met frontend applicaties. Voor vragen of suggesties, neem contact op met het developer AhmadAlDibo.
+*Laatst bijgewerkt: 4 December 2025*

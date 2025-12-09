@@ -1,0 +1,108 @@
+<nav class="main-navigation navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <!-- Mobile Search -->
+        <div class="d-block d-md-none mobile-search">
+            <form class="search-form" action="{% url 'product_search' %}" method="get">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="q" placeholder="{% trans 'Search...' %}" aria-label="Search">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Navigation Links -->
+        <div class="collapse navbar-collapse" id="mainNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'home' %}">
+                        <i class="fas fa-home me-1"></i>{% trans "Home" %}
+                    </a>
+                </li>
+                
+                <!-- Products Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="productsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-box me-1"></i>{% trans "Products" %}
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="productsDropdown">
+                        <li><a class="dropdown-item" href="{% url 'product_list' %}">{% trans "All Products" %}</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% for category in product_categories %}
+                        <li><a class="dropdown-item" href="{% url 'product_list' %}?category={{ category.slug }}">{{ category.name }}</a></li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'product_list' %}?featured=true">{% trans "Featured Products" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'product_list' %}?on_sale=true">{% trans "On Sale" %}</a></li>
+                    </ul>
+                </li>
+                
+                <!-- Services Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="servicesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-concierge-bell me-1"></i>{% trans "Services" %}
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="servicesDropdown">
+                        <li><a class="dropdown-item" href="{% url 'service_list' %}">{% trans "All Services" %}</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% for category in service_categories %}
+                        <li><a class="dropdown-item" href="{% url 'service_list' %}?category={{ category.slug }}">{{ category.name }}</a></li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'service_list' %}?emergency=true">{% trans "Emergency Services" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'service_list' %}?online_booking=true">{% trans "Online Booking" %}</a></li>
+                    </ul>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'project_list' %}">
+                        <i class="fas fa-project-diagram me-1"></i>{% trans "Projects" %}
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'quote_create' %}">
+                        <i class="fas fa-file-invoice me-1"></i>{% trans "Request Quote" %}
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contact_form' %}">
+                        <i class="fas fa-envelope me-1"></i>{% trans "Contact" %}
+                    </a>
+                </li>
+                
+                <!-- Quick Actions (for authenticated users) -->
+                {% if user.is_authenticated %}
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="quickActionsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bolt me-1"></i>{% trans "Quick Actions" %}
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="quickActionsDropdown">
+                        {% if user.is_staff %}
+                        <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-cog me-2"></i>{% trans "Admin Dashboard" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'order_list' %}?status=processing"><i class="fas fa-tasks me-2"></i>{% trans "Process Orders" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'quote_list' %}?status=pending"><i class="fas fa-file-signature me-2"></i>{% trans "Review Quotes" %}</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        <li><a class="dropdown-item" href="{% url 'order_create' %}"><i class="fas fa-plus-circle me-2"></i>{% trans "New Order" %}</a></li>
+                        <li><a class="dropdown-item" href="{% url 'quote_create' %}"><i class="fas fa-file-plus me-2"></i>{% trans "New Quote" %}</a></li>
+                    </ul>
+                </li>
+                {% endif %}
+            </ul>
+            
+            <!-- Cart & Notification Widgets -->
+            <div class="d-flex">
+                {% include 'includes/widgets/cart_widget.html' %}
+                {% include 'includes/widgets/notification_widget.html' %}
+            </div>
+        </div>
+    </div>
+</nav>
