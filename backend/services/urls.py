@@ -5,7 +5,7 @@ from .views import (
     ServiceSearchView, TestimonialViewSet,
     ServiceStatisticsView
 )
-
+app_name = 'services'  # <-- Add this line
 router = DefaultRouter()
 router.register(r'categories', ServiceCategoryViewSet, basename='service-category')
 router.register(r'services', ServiceViewSet, basename='service')

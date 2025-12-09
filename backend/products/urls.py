@@ -6,6 +6,8 @@ from .views import (
     ProductStatisticsView
 )
 
+app_name = 'products'  # <-- Add this line
+
 router = DefaultRouter()
 router.register(r'categories', ProductCategoryViewSet, basename='product-category')
 router.register(r'products', ProductViewSet, basename='product')

@@ -1,85 +1,241 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
-from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+import uuid
 
-class CustomUserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError(_('The Email must be set'))
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        extra_fields.setdefault('is_active', True)
-
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError(_('Superuser must have is_staff=True.'))
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError(_('Superuser must have is_superuser=True.'))
-        return self.create_user(email, password, **extra_fields)
-
-class CustomUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(_('email address'), unique=True)
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
-    last_name = models.CharField(_('last name'), max_length=150, blank=True)
-    phone = models.CharField(_('phone number'), max_length=20, blank=True)
+class TimeStampedModel(models.Model):
+    """
+    Abstract base model met timestamps voor alle modellen.
+    """
     
-    is_staff = models.BooleanField(_('staff status'), default=False)
-    is_active = models.BooleanField(_('active'), default=True)
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    # Unieke identificatie
+    id = models.UUIDField(
+        _('UUID'),
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+        help_text=_('Unieke identificatie voor dit object')
+    )
     
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []
+    # Timestamps voor tracking
+    created_at = models.DateTimeField(
+        _('aangemaakt op'),
+        auto_now_add=True,
+        help_text=_('Datum en tijd wanneer dit object aangemaakt is')
+    )
     
-    objects = CustomUserManager()
+    updated_at = models.DateTimeField(
+        _('bijgewerkt op'),
+        auto_now=True,
+        help_text=_('Datum en tijd wanneer dit object voor het laatst bijgewerkt is')
+    )
+    
+    # Metadata voor auditing
+    created_by = models.ForeignKey(
+        'authentication.CustomUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='%(class)s_created',
+        verbose_name=_('aangemaakt door'),
+        help_text=_('Gebruiker die dit object aangemaakt heeft')
+    )
+    
+    updated_by = models.ForeignKey(
+        'authentication.CustomUser',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='%(class)s_updated',
+        verbose_name=_('bijgewerkt door'),
+        help_text=_('Gebruiker die dit object voor het laatst bijgewerkt heeft')
+    )
+    
+    # Soft delete voor data retention
+    is_deleted = models.BooleanField(
+        _('verwijderd'),
+        default=False,
+        help_text=_('Indicatie of dit object zacht verwijderd is')
+    )
+    
+    deleted_at = models.DateTimeField(
+        _('verwijderd op'),
+        null=True,
+        blank=True,
+        help_text=_('Datum en tijd wanneer dit object zacht verwijderd is')
+    )
+    
+    # Audit logging
+    version = models.PositiveIntegerField(
+        _('versie'),
+        default=1,
+        help_text=_('Versienummer voor optimistic locking')
+    )
     
     class Meta:
-        verbose_name = _('user')
-        verbose_name_plural = _('users')
+        abstract = True
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['created_at']),
+            models.Index(fields=['updated_at']),
+            models.Index(fields=['is_deleted']),
+        ]
     
-    def __str__(self):
-        return self.email
+    def save(self, *args, **kwargs):
+        """
+        Override save method voor versie management en audit logging.
+        """
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        
+        request = kwargs.pop('request', None)
+        
+        # Set created_by/updated_by als request beschikbaar is
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            if not self.pk:  # Object wordt aangemaakt
+                if not self.created_by_id:
+                    self.created_by = request.user
+            else:  # Object wordt bijgewerkt
+                self.updated_by = request.user
+            
+            # Increment versie voor optimistic locking
+            if self.pk:
+                self.version = models.F('version') + 1
+        
+        super().save(*args, **kwargs)
     
-    def get_full_name(self):
-        full_name = f'{self.first_name} {self.last_name}'
-        return full_name.strip()
+    def soft_delete(self, user=None):
+        """
+        Zachte verwijdering van het object.
+        """
+        from django.utils import timezone
+        
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        
+        if user:
+            self.updated_by = user
+        
+        self.save()
     
-    def get_short_name(self):
-        return self.first_name
+    def restore(self, user=None):
+        """
+        Herstel zacht verwijderd object.
+        """
+        self.is_deleted = False
+        self.deleted_at = None
+        
+        if user:
+            self.updated_by = user
+        
+        self.save()
+    
+    def hard_delete(self, *args, **kwargs):
+        """
+        Harde verwijdering (override voor veiligheid).
+        """
+        import logging
+        logger = logging.getLogger(__name__)
+        
+        # Log de verwijdering voor audit purposes
+        logger.warning(
+            f"Hard delete of {self.__class__.__name__} with ID {self.id}"
+        )
+        
+        super().delete(*args, **kwargs)
+    
+    @property
+    def age(self):
+        """
+        Leeftijd van het object in dagen.
+        """
+        from django.utils import timezone
+        
+        if self.created_at:
+            delta = timezone.now() - self.created_at
+            return delta.days
+        return None
+    
+    @property
+    def last_modified_age(self):
+        """
+        Tijd sinds laatste wijziging in dagen.
+        """
+        from django.utils import timezone
+        
+        if self.updated_at:
+            delta = timezone.now() - self.updated_at
+            return delta.days
+        return None
+    
+    def get_audit_log(self):
+        """
+        Genereer audit log entry voor dit object.
+        """
+        return {
+            'id': str(self.id),
+            'model': self.__class__.__name__,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'created_by': self.created_by.email if self.created_by else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'updated_by': self.updated_by.email if self.updated_by else None,
+            'is_deleted': self.is_deleted,
+            'deleted_at': self.deleted_at.isoformat() if self.deleted_at else None,
+            'version': self.version,
+            'age_days': self.age,
+            'last_modified_days': self.last_modified_age
+        }
 
-class SiteConfig(models.Model):
-    company_name = models.CharField(max_length=200)
-    company_email = models.EmailField()
-    company_phone = models.CharField(max_length=20)
-    company_address = models.TextField()
+
+class SoftDeleteManager(models.Manager):
+    """
+    Custom manager voor soft delete functionaliteit.
+    """
     
-    # Social media
-    facebook_url = models.URLField(blank=True)
-    instagram_url = models.URLField(blank=True)
-    twitter_url = models.URLField(blank=True)
-    linkedin_url = models.URLField(blank=True)
+    def get_queryset(self):
+        """
+        Standaard queryset die zacht verwijderde items uitsluit.
+        """
+        return super().get_queryset().filter(is_deleted=False)
     
-    # SEO
-    meta_title = models.CharField(max_length=200, blank=True)
-    meta_description = models.TextField(blank=True)
-    meta_keywords = models.TextField(blank=True)
+    def all_with_deleted(self):
+        """
+        Retourneer alle items inclusief zacht verwijderde.
+        """
+        return super().get_queryset()
     
-    # Configuration
-    maintenance_mode = models.BooleanField(default=False)
-    allow_registration = models.BooleanField(default=True)
+    def deleted_only(self):
+        """
+        Retourneer alleen zacht verwijderde items.
+        """
+        return super().get_queryset().filter(is_deleted=True)
     
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    def active_only(self):
+        """
+        Retourneer alleen actieve (niet verwijderde) items.
+        """
+        return self.get_queryset()
+
+
+class TimeStampedModelWithSoftDelete(TimeStampedModel):
+    """
+    Extended TimeStampedModel met soft delete manager.
+    """
+    
+    objects = SoftDeleteManager()
+    all_objects = models.Manager()  # Voor admin access tot alles
     
     class Meta:
-        verbose_name = 'Site Configuration'
-        verbose_name_plural = 'Site Configuration'
+        abstract = True
     
-    def __str__(self):
-        return self.company_name
+    def delete(self, using=None, keep_parents=False):
+        """
+        Override delete voor soft delete pattern.
+        """
+        self.soft_delete()
+    
+    def permanent_delete(self, *args, **kwargs):
+        """
+        Permanente verwijdering van database.
+        """
+        super(TimeStampedModel, self).delete(*args, **kwargs)

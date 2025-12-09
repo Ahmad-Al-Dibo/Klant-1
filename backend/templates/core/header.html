@@ -1,0 +1,78 @@
+<header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+            <!-- Logo -->
+            <div class="flex items-center">
+                <a href="{% url 'home' %}" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">{{ site_config.COMPANY_NAME|default:"C"|first }}</span>
+                    </div>
+                    <span class="text-xl font-bold text-gray-900">{{ site_config.COMPANY_NAME|default:"Company" }}</span>
+                </a>
+            </div>
+
+            <!-- Desktop Menu -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="{% url 'home' %}" class="text-gray-700 hover:text-primary-600 font-medium">Home</a>
+                <a href="{% url 'products:list' %}" class="text-gray-700 hover:text-primary-600 font-medium">Producten</a>
+                <a href="{% url 'services:list' %}" class="text-gray-700 hover:text-primary-600 font-medium">Diensten</a>
+                <a href="{% url 'contact:form' %}" class="text-gray-700 hover:text-primary-600 font-medium">Contact</a>
+                
+                {% if user.is_authenticated %}
+                    <div class="relative group">
+                        <button class="flex items-center space-x-2 text-gray-700 hover:text-primary-600">
+                            <i class="fas fa-user-circle text-xl"></i>
+                            <span class="font-medium">{{ user.get_full_name|default:user.username }}</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 invisible group-hover:visible">
+                            <a href="{% url 'profile:detail' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Profiel</a>
+                            <a href="{% url 'quotes:list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Mijn Offertes</a>
+                            <a href="{% url 'orders:list' %}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Bestellingen</a>
+                            <hr class="my-2">
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-red-600 hover:bg-gray-100">Uitloggen</a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'login' %}" class="text-primary-600 hover:text-primary-700 font-medium">Inloggen</a>
+                    <a href="{% url 'register' %}" class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition">Registreren</a>
+                {% endif %}
+            </nav>
+
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-700" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden hidden py-4 border-t">
+            <div class="flex flex-col space-y-4">
+                <a href="{% url 'home' %}" class="text-gray-700 hover:text-primary-600 py-2">Home</a>
+                <a href="{% url 'products:list' %}" class="text-gray-700 hover:text-primary-600 py-2">Producten</a>
+                <a href="{% url 'services:list' %}" class="text-gray-700 hover:text-primary-600 py-2">Diensten</a>
+                <a href="{% url 'contact:form' %}" class="text-gray-700 hover:text-primary-600 py-2">Contact</a>
+                
+                {% if user.is_authenticated %}
+                    <hr>
+                    <a href="{% url 'profile:detail' %}" class="text-gray-700 hover:text-primary-600 py-2">Profiel</a>
+                    <a href="{% url 'quotes:list' %}" class="text-gray-700 hover:text-primary-600 py-2">Offertes</a>
+                    <a href="{% url 'orders:list' %}" class="text-gray-700 hover:text-primary-600 py-2">Bestellingen</a>
+                    <a href="{% url 'logout' %}" class="text-red-600 hover:text-red-700 py-2">Uitloggen</a>
+                {% else %}
+                    <div class="flex flex-col space-y-2 pt-2">
+                        <a href="{% url 'login' %}" class="text-primary-600 hover:text-primary-700 py-2">Inloggen</a>
+                        <a href="{% url 'register' %}" class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition text-center">Registreren</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</header>
+
+<script>
+    function toggleMobileMenu() {
+        const menu = document.getElementById('mobileMenu');
+        menu.classList.toggle('hidden');
+    }
+</script>
