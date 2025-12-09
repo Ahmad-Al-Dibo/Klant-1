@@ -1,5 +1,7 @@
+# type: ignore[UndefinedVariable]
+
 from django.apps import AppConfig
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext_lazy as _  # Dit is de belangrijke import!
 
 
 class ProjectsConfig(AppConfig):
@@ -8,5 +10,4 @@ class ProjectsConfig(AppConfig):
     verbose_name = _('Projecten')
     
     def ready(self):
-        # Import signals als je die hebt
         pass

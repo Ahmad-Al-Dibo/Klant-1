@@ -1,11 +1,13 @@
-import uuid
-from django.db import models
-from django.utils.translation import gettext_lazy as _
-from django.core.validators import MinValueValidator, MaxValueValidator, URLValidator
-from django.db.models import Sum, F, DecimalField, ExpressionWrapper
-from decimal import Decimal
-from core.models import TimeStampedModelWithSoftDelete
 
+from decimal import Decimal
+from django.conf import settings
+from django.db import models
+from core.models import TimeStampedModelWithSoftDelete
+from django.utils.translation import gettext_lazy as _  # Dit is de belangrijke import!
+
+from core.validators import (
+    MinValueValidator,
+)
 
 class ProjectStatus(models.TextChoices):
     """
@@ -18,7 +20,6 @@ class ProjectStatus(models.TextChoices):
     COMPLETED = 'completed', _('Voltooid')
     CANCELLED = 'cancelled', _('Geannuleerd')
     ARCHIVED = 'archived', _('Gearchiveerd')
-
 
 class ProjectPriority(models.TextChoices):
     """
@@ -79,27 +80,29 @@ class Project(TimeStampedModelWithSoftDelete):
         help_text=_('Prioriteit van het project')
     )
     
-    # Klant en team
-    client = models.ForeignKey(
-        'clients.Client',
-        on_delete=models.PROTECT,
-        related_name='projects',
-        verbose_name=_('klant'),
-        help_text=_('Klant voor wie het project wordt uitgevoerd')
-    )
+    # # Klant en team
+    # client = models.ForeignKey(
+    #     'clients.Client',
+    #     on_delete=models.PROTECT,
+    #     related_name='projects',
+    #     verbose_name=_('klant'),
+    #     help_text=_('Klant voor wie het project wordt uitgevoerd')
+    # )
+    client = models.TextField(default=None)
     
-    contact_person = models.ForeignKey(
-        'clients.ClientContact',
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name='projects',
-        verbose_name=_('contactpersoon'),
-        help_text=_('Contactpersoon bij de klant')
-    )
+    # contact_person = models.ForeignKey(
+    #     'clients.ClientContact',
+    #     on_delete=models.SET_NULL,
+    #     null=True,
+    #     blank=True,
+    #     related_name='projects',
+    #     verbose_name=_('contactpersoon'),
+    #     help_text=_('Contactpersoon bij de klant')
+    # )
+    contact_person = models.TextField(default=None)
     
     project_manager = models.ForeignKey(
-        'authentication.CustomUser',
+        settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -109,7 +112,7 @@ class Project(TimeStampedModelWithSoftDelete):
     )
     
     team_members = models.ManyToManyField(
-        'authentication.CustomUser',
+        settings.AUTH_USER_MODEL,
         blank=True,
         related_name='projects',
         verbose_name=_('teamleden'),
@@ -151,7 +154,7 @@ class Project(TimeStampedModelWithSoftDelete):
         max_digits=12,
         decimal_places=2,
         default=0,
-        validators=[MinValueValidator(0)],
+        validators=[MinValueValidator(0, message=_('Budget mag niet negatief zijn.'))],
         help_text=_('Totaal budget voor het project')
     )
     
@@ -214,11 +217,11 @@ class Project(TimeStampedModelWithSoftDelete):
         blank=True,
         help_text=_('Datum/tijd wanneer het project is geannuleerd')
     )
-    
+
     class Meta:
-        verbose_name = _('project')
-        verbose_name_plural = _('projecten')
-        ordering = ['-created_at']
+        verbose_name = _("project")
+        verbose_name_plural = _("projecten")
+        ordering = ["-created_at"]
         indexes = [
             models.Index(fields=['project_number']),
             models.Index(fields=['status', 'priority']),
@@ -226,29 +229,30 @@ class Project(TimeStampedModelWithSoftDelete):
             models.Index(fields=['project_manager', 'status']),
             models.Index(fields=['start_date', 'end_date']),
         ]
-    
+
     def __str__(self):
         return f"{self.project_number} - {self.name}"
     
     def save(self, *args, **kwargs):
-        """Auto-genereren van projectnummer bij aanmaak"""
+        """
+        
+        """
         if not self.project_number:
             self.project_number = self.generate_project_number()
         super().save(*args, **kwargs)
     
     def generate_project_number(self):
-        """Genereer uniek projectnummer"""
         from django.utils import timezone
         import random
         import string
-        
-        year = timezone.now().strftime('%y')
+
+        year = timezone.now().strftime("%y")
         sequential = Project.objects.filter(
-            project_number__startswith=f'PRJ{year}'
+            project_number__startswith=f"PRJ{year}"
         ).count() + 1
-        
+
         random_suffix = ''.join(random.choices(string.ascii_uppercase, k=2))
-        
+
         return f"PRJ{year}{sequential:04d}{random_suffix}"
     
     @property
@@ -301,7 +305,7 @@ class Project(TimeStampedModelWithSoftDelete):
         if self.end_date and self.status == ProjectStatus.ACTIVE:
             return timezone.now().date() > self.end_date
         return False
-
+    
 
 class ProjectCategory(models.Model):
     """
@@ -346,7 +350,7 @@ class ProjectCategory(models.Model):
         default=True,
         help_text=_('Of deze categorie beschikbaar is voor gebruik')
     )
-    
+
     class Meta:
         verbose_name = _('project categorie')
         verbose_name_plural = _('project categorieën')
@@ -360,8 +364,9 @@ class ProjectCategory(models.Model):
         from django.utils.text import slugify
         
         if not self.slug:
-            self.slug = slugify(self.name)
+            self.slug = slugify(self.name) # creating url-vriendelijk name.
         super().save(*args, **kwargs)
+
 
 
 class ProjectTag(models.Model):
