@@ -1,68 +1,12 @@
 <!DOCTYPE html>
-<html lang="nl" class="scroll-smooth">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{{ site_config.COMPANY_NAME|default:"Company" }}{% endblock %}</title>
-    
-    <!-- Tailwind CSS via CDN (of gebruik eigen build) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Custom Tailwind Configuration -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
-                        }
-                    },
-                    fontFamily: {
-                        'sans': ['Inter', 'system-ui', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    {% block extra_css %}{% endblock %}
+    <title>Document</title>
+    {% block head %}{% endblock %}
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
-    
-    <!-- Header -->
-    {% include 'core/header.html' %}
-    
-    <!-- Navigation -->
-    {% include 'core/navigation.html' %}
-    
-    <!-- Main Content -->
-    <main class="flex-1 container mx-auto px-4 py-8">
-        <!-- Messages -->
-        {% include 'core/messages.html' %}
-        
-        <!-- Page Content -->
-        {% block content %}{% endblock %}
-    </main>
-    
-    <!-- Footer -->
-    {% include 'core/footer.html' %}
-    
-    <!-- Scripts -->
-    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    {% block extra_js %}{% endblock %}
-    
+<body>
+    {% block content %}{% endblock %}
 </body>
 </html>
