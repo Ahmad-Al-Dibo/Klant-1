@@ -9,6 +9,29 @@ from core.validators import (
     MinValueValidator,
 )
 
+class Task(models.Model):
+    project = models.ForeignKey(
+        'Project',
+        on_delete=models.CASCADE,
+        related_name='tasks',  # hiermee kun je project.tasks gebruiken
+        verbose_name=_('project')
+    )
+    name = models.CharField(_('naam'), max_length=200)
+    status = models.CharField(
+        _('status'),
+        max_length=20,
+        choices=(
+            ('pending', _('In afwachting')),
+            ('in_progress', _('Bezig')),
+            ('completed', _('Voltooid')),
+        ),
+        default='pending'
+    )
+    due_date = models.DateField(_('vervaldatum'), null=True, blank=True)
+    
+    def __str__(self):
+        return self.name
+
 class ProjectStatus(models.TextChoices):
     """
     Status keuzes voor projecten.
@@ -56,6 +79,7 @@ class Project(TimeStampedModelWithSoftDelete):
         max_length=200,
         help_text=_('Naam van het project')
     )
+
     
     description = models.TextField(
         _('beschrijving'),
@@ -271,13 +295,11 @@ class Project(TimeStampedModelWithSoftDelete):
     
     @property
     def progress_percentage(self):
-        """Projectvoortgang percentage"""
-        completed_tasks = self.tasks.filter(status='completed').count()
         total_tasks = self.tasks.count()
-        
-        if total_tasks > 0:
-            return (completed_tasks / total_tasks) * 100
-        return 0
+        if total_tasks == 0:
+            return 0
+        completed_tasks = self.tasks.filter(status='completed').count()
+        return int((completed_tasks / total_tasks) * 100)
     
     @property
     def total_costs(self):

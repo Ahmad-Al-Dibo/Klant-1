@@ -2,9 +2,23 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
-from .models import Project, ProjectCategory, ProjectTag, ProjectStatus, ProjectPriority
+from .models import Project, ProjectCategory, ProjectTag, ProjectStatus, ProjectPriority, Task
+from .forms import ProjectTagForm
 
 User = get_user_model()
+
+
+@admin.register(Task)
+class TaskAdmin(admin.ModelAdmin):
+    """
+    Admin configuratie voor Task.
+    """
+    list_display = ('name', 'project', 'status', 'due_date')
+    search_fields = ('name', 'description', 'project__name', 'assigned_to__email')
+    list_filter = ('status', 'due_date')
+    ordering = ('-due_date',)
+    autocomplete_fields = ('project',)
+
 
 
 @admin.register(ProjectCategory)
@@ -18,7 +32,7 @@ class ProjectCategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('name',)
     list_editable = ('is_active',)
-    readonly_fields = ('slug', 'color_display')
+    readonly_fields = ('color_display',)
     fieldsets = (
         (None, {
             'fields': ('name', 'slug', 'is_active')
@@ -56,18 +70,23 @@ class ProjectCategoryAdmin(admin.ModelAdmin):
     project_count.short_description = _('aantal projecten')
 
 
+
+
+
+
 @admin.register(ProjectTag)
 class ProjectTagAdmin(admin.ModelAdmin):
     """
     Admin configuratie voor ProjectTag.
     """
+    form = ProjectTagForm
     list_display = ('name', 'slug', 'color_display', 'is_active', 'project_count')
     list_filter = ('is_active',)
     search_fields = ('name', 'description', 'slug')
     prepopulated_fields = {'slug': ('name',)}
     ordering = ('name',)
     list_editable = ('is_active',)
-    readonly_fields = ('slug', 'color_display')
+    readonly_fields = ('color_display',)
     fieldsets = (
         (None, {
             'fields': ('name', 'slug', 'is_active')
@@ -358,7 +377,7 @@ class ProjectAdmin(admin.ModelAdmin):
         Toon project manager.
         """
         if obj.project_manager:
-            return obj.project_manager.get_full_name() or obj.project_manager.username
+            return obj.project_manager.get_full_name() or obj.project_manager.email
         return '-'
     project_manager_display.short_description = _('project manager')
     project_manager_display.admin_order_field = 'project_manager'
