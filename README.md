@@ -13,6 +13,15 @@ De Producten API biedt een complete oplossing voor het beheren en tonen van meub
 GET /api/v1/products/categories/
 ```
 
+✔ DRF endpoints
+
+Endpoint	Method	Actie
+/api/users/	GET	lijst van users
+/api/users/	POST	user aanmaken
+/api/users/<id>/	GET	user ophalen
+/api/users/<id>/	PUT/PATCH	user updaten
+/api/users/<id>/	DELETE	user verwijderen
+
 **Parameters:**
 - `parent` (optioneel): Filter op parent categorie slug
 - `root_only` (optioneel): Toon alleen root categorieën
